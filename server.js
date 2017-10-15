@@ -35,18 +35,18 @@ server.use(cookieParser())
 
 //----------------------模板
 server.engine('html', consolidate.ejs)
-server.set('views', 'template')
-server.set('view engine', 'html')
+server.set('views', 'template');
+server.set('view engine', 'html');
 
 //----------------------route
 /* server.use('/article', require('./route/1.js')())
 server.use('/blog', require('./route/2.js')())
  */
-server.use('/',require('./route/web.js')())
-server.use('/admin',require('./route/admin.js')())
+server.use('/',require('./route/web.js')());
+server.use('/admin',require('./route/admin/index.js')());
 
 
 
 
 //------------------------static
-server.use(static('./static/'))
+server.use(static('./static/'));
