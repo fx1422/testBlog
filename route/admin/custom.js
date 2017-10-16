@@ -36,7 +36,6 @@ module.exports= function () {
                   }
               });
 
-
               break;
           case 'del':
               db.query(`SELECT * FROM custom_evaluation_table WHERE ID=${req.query.id}`,(err,data)=>{
@@ -82,23 +81,58 @@ module.exports= function () {
   });
   router.post('/',(req,res)=>{
       const title=req.body.title,description = req.body.description;
+      if(req.files[0]){
+          const ext = pathLib.parse(req.files[0].originalname).ext;
+          const oldPath = req.files[0].path;
+          const newPath = req.files[0].path + ext;
+          var newFileName = req.files[0].filename + ext;
 
-      const ext = pathLib.parse(req.files[0].originalname).ext;
-      const oldPath = req.files[0].path;
-      const newPath = req.files[0].path + ext;
-      const newFileName = req.files[0].filename + ext;
+      }else {
+          var newFileName=null;
+      }
 
-      fs.rename(oldPath,newPath,(err,data)=>{
-          if(err){
+      if(newFileName){
+          fs.rename(oldPath,newPath,(err,data)=> {
+              if (err) {
+                  console.error(err);
+                  res.status(404).send('files error').end();
+              } else {
+                  if(req.body.mod_id){//---------------------修改
+                      /*db.query(`UPDATE custom_evaluation_table SET title='${req.body.title}',
+                      description='${req.body.description}',
+                      src='' WHERE ID='${req.body.mod_id}'`,
+                          (err,data)=>{
+                      })*/
+
+                  }else {//------------------------------添加
+                      db.query(`INSERT INTO custom_evaluation_table (title,description,src) VALUES
+                  ('${title}','${description}','${newFileName}')`,(err,data)=>{
+                          if(err){
+                              console.error(err);
+                              res.status(500).send('database error').end();
+                          }else {
+                              res.redirect('/admin/custom');
+                          }
+                      })
+                  }
+              }
+          });
+      }else {
+          if (err) {
               console.error(err);
               res.status(404).send('files error').end();
-          }else {
-              if(req.body.mod_id){
-                  /*db.query(`UPDATE custom_evaluation_table SET title='${req.body.title}',
-                  description='${req.body.description}',
-                  src='' WHERE ID='${req.body.mod_id}'`,
+          } else {
+              if(req.body.mod_id){//---------------------修改
+                  db.query(`UPDATE custom_evaluation_table SET title='${req.body.title}',
+                  description='${req.body.description}'WHERE ID=${req.body.mod_id},`,
                       (err,data)=>{
-                  })*/
+                          if(err){
+                              console.error(err);
+                              res.status(500).send('database error').end();
+                          }else {
+                              res.redirect('/admin/custom');
+                          }
+                  })
 
               }else {
                   db.query(`INSERT INTO custom_evaluation_table (title,description,src) VALUES
@@ -112,10 +146,7 @@ module.exports= function () {
                   })
               }
           }
-      });
-
-
-
+      }
   });
 
 
